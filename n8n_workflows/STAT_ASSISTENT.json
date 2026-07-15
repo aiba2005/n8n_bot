@@ -1,0 +1,936 @@
+{
+  "name": "STAT_ASSISTENT",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://stat.gov.kg{{$json[\"output\"]}}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "pageHtml"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -144,
+        240
+      ],
+      "id": "e31c624b-3490-4425-be11-ff4d4bd1df36",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "pageHtml",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "linkText",
+              "cssSelector": "a[href*=\"/ru/opendata/category/\"]",
+              "returnArray": true
+            },
+            {
+              "key": "linkUrl",
+              "cssSelector": "a[href*=\"/ru/opendata/category/\"]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        240
+      ],
+      "id": "51158c3a-c8f4-4b80-9255-e68f53b006b5",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 50,
+          "responseFormat": "text",
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        176
+      ],
+      "id": "21beba24-4e78-4816-9759-552fcbe80d48",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "4s4bToi6IyaO6C6N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.chatInput}}",
+        "options": {
+          "systemMessage": "=Ты агент для сайта stat.gov.kg.  \nТвоя задача — по вопросу пользователя выбрать правильную категорию и вернуть только одну ссылку. \nВопрос пользователя может быть на русском или кыргызском языке.\n\nОпредели смысл вопроса независимо от языка и выбери наиболее подходящую категорию.\nНикаких объяснений, текста или других ссылок — только одну ссылку.\n\nСписок категорий:\n- ВВП → /ru/opendata/category/1/\n- Внешняя и взаимная торговля товарами → /ru/opendata/category/2/\n- Гос. бюджет и кредитование → /ru/opendata/category/3/\n- Жилищный фонд → /ru/opendata/category/48/\n- Здравоохранение → /ru/opendata/category/5/\n- Инвестиции → /ru/opendata/category/6/\n- Индексы доверия населения → /ru/opendata/category/60/\n- Индикаторы \"Зеленого роста\" → /ru/opendata/category/7/\n- Информационно-коммуникационные технологии → /ru/opendata/category/5310/\n- Культура → /ru/opendata/category/8/\n- Население → /ru/opendata/category/4/\n- Образование → /ru/opendata/category/9/\n- Окружающая среда → /ru/opendata/category/10/\n- Преступность → /ru/opendata/category/13/\n- Промышленность → /ru/opendata/category/14/\n- Сельское хозяйство → /ru/opendata/category/15/\n- Статистические переписи → /ru/opendata/category/5955/\n- Строительство → /ru/opendata/category/16/\n- Торговля и услуги → /ru/opendata/category/12/\n- Транспорт и связь → /ru/opendata/category/17/\n- Труд и занятость → /ru/opendata/category/18/\n- Туризм → /ru/opendata/category/19/\n- Уровень жизни → /ru/opendata/category/20/\n- Цены → /ru/opendata/category/21/\n\nПравила выбора:\n- Если вопрос про больницы, пациентов, медицину → /ru/opendata/category/5/\n- Если вопрос про население, рождаемость, смертность → /ru/opendata/category/4/\n- Если вопрос про ВВП → /ru/opendata/category/1/\n- Если вопрос про цены, инфляцию → /ru/opendata/category/21/\n- Если вопрос про образование → /ru/opendata/category/9/\n- Если вопрос про сельское хозяйство → /ru/opendata/category/15/\n- Если вопрос про промышленность → /ru/opendata/category/14/\n- Если вопрос про транспорт или связь → /ru/opendata/category/17/\n- Если вопрос про уровень жизни → /ru/opendata/category/20/\n- Если вопрос про культуру → /ru/opendata/category/8/\n- Если вопрос про преступность → /ru/opendata/category/13/\n- Если вопрос про строительство → /ru/opendata/category/16/\n- Если вопрос про инвестиции → /ru/opendata/category/6/\n- Если вопрос про торговлю и услуги → /ru/opendata/category/12/\n- Если вопрос про туризм → /ru/opendata/category/19/\n- Если вопрос про бюджет или кредитование → /ru/opendata/category/3/\n- Если вопрос про внешнюю торговлю → /ru/opendata/category/2/\n\nВопрос клиента: {{$json[\"chatInput\"]}}\n\nВерни только одну ссылку из списка.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -384,
+        -16
+      ],
+      "id": "cd892f84-fb70-400d-80c3-d4d85489f5fa",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 50,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        224,
+        400
+      ],
+      "id": "fd375850-a1b3-475a-875f-895870d79b2e",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "4s4bToi6IyaO6C6N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -368,
+        464
+      ],
+      "id": "012f3b4f-627f-46ee-8ea8-692370933196",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mainCategories = [\n  \"/ru/opendata/category/1/\",\n  \"/ru/opendata/category/2/\",\n  \"/ru/opendata/category/3/\",\n  \"/ru/opendata/category/48/\",\n  \"/ru/opendata/category/5/\",\n  \"/ru/opendata/category/6/\",\n  \"/ru/opendata/category/60/\",\n  \"/ru/opendata/category/7/\",\n  \"/ru/opendata/category/5310/\",\n  \"/ru/opendata/category/8/\",\n  \"/ru/opendata/category/4/\",\n  \"/ru/opendata/category/9/\",\n  \"/ru/opendata/category/10/\",\n  \"/ru/opendata/category/13/\",\n  \"/ru/opendata/category/14/\",\n  \"/ru/opendata/category/15/\",\n  \"/ru/opendata/category/5955/\",\n  \"/ru/opendata/category/16/\",\n  \"/ru/opendata/category/12/\",\n  \"/ru/opendata/category/17/\",\n  \"/ru/opendata/category/18/\",\n  \"/ru/opendata/category/19/\",\n  \"/ru/opendata/category/20/\",\n  \"/ru/opendata/category/21/\"\n];\n\nconst texts = $json.linkText;\nconst urls = $json.linkUrl;\n\nconst categories = [];\n\nfor (let i = 0; i < urls.length; i++) {\n\n  if (!mainCategories.includes(urls[i])) {\n    categories.push({\n      linkText: texts[i],\n      linkUrl: urls[i]\n    });\n  }\n\n}\n\nreturn [\n  {\n    json: {\n      chatInput: $json.chatInput,\n      categories: categories\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        464
+      ],
+      "id": "cdfb43ca-982c-4df8-a8e1-f884d45c978e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Вопрос пользователя:\n{{$json.chatInput}}\n\nСписок категорий:\n{{ JSON.stringify($json.categories) }}\n\nВыбери одну наиболее подходящую категорию.\nВопрос пользователя может быть на русском или кыргызском языке.\n\nПонимай оба языка одинаково.\n\nПравила:\n- Используй только категории из списка.\n- Не придумывай новые URL.\n- Не изменяй linkUrl.\n- selectedUrl должен быть в точности равен linkUrl выбранной категории.\n\nВерни только JSON:\n\n{\n  \"selectedCategory\": \"<linkText>\",\n  \"selectedUrl\": \"<linkUrl>\"\n}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        240
+      ],
+      "id": "f881de1a-6612-4f00-80ba-2aa027bcfa89",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "url": "=https://stat.gov.kg{{$json.selectedUrl}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "pageHtml"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        864,
+        240
+      ],
+      "id": "264c13b6-7ef7-4b40-b174-95a45182d3d3",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let txt = $json.text;\n\n// Удаляем ```json и ```\ntxt = txt.replace(/```json\\s*/i, \"\");\ntxt = txt.replace(/```/g, \"\");\ntxt = txt.trim();\n\n// Преобразуем в объект\nconst obj = JSON.parse(txt);\n\nreturn [\n{\njson:{\nselectedUrl:obj.selectedUrl,\nselectedCategory:obj.selectedCategory,\n\nchatInput:$input.first().json.chatInput\n}\n}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        240
+      ],
+      "id": "02024f19-6dd7-4273-afa7-99c2bcb8468b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "pageHtml",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "jsonLink",
+              "cssSelector": "a[href$=\"/json\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1008,
+        240
+      ],
+      "id": "973b6cc3-e18a-47f9-8d3d-4fcfb9768d72",
+      "name": "HTML2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=https://stat.gov.kg{{$json.jsonLink}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1552,
+        240
+      ],
+      "id": "9f7e2df6-197f-43f4-ba5d-17f11b379769",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Вопрос пользователя:\n\n{{$json.chatInput}}\n\nСтатистические данные:\n\n{{ JSON.stringify({\n  title: $json.title,\n  units: $json.units,\n  data: $json.data\n}) }}\n\nСтраница источника:\n\n{{ $json.sourcePage }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Ты — интеллектуальный помощник Национального статистического комитета Кыргызской Республики.  Твоя задача — отвечать на вопросы пользователя только на основе переданных статистических данных.  ГЛАВНОЕ ПРАВИЛО ПО ЯЗЫКУ ОТВЕТА:  1. Определи язык вопроса пользователя. - Если пользователь задал вопрос на кыргызском языке — отвечай полностью на кыргызском языке. - Если пользователь задал вопрос на русском языке — отвечай полностью на русском языке. - Не смешивай кыргызский и русский языки в одном ответе. - Не меняй язык ответа независимо от языка переданных данных. - Язык ответа всегда должен совпадать с языком вопроса пользователя.   ГЛАВНЫЕ ПРАВИЛА:  1. Определяй намерение пользователя только по тексту его вопроса. Переданные данные используются только для поиска ответа после определения того, что именно хочет узнать пользователь.   2. Сначала определи, указал ли пользователь статистический показатель.  Если статистический показатель НЕ указан:  - обязательно попроси пользователя уточнить, какой именно показатель его интересует; - не выбирай показатель самостоятельно из данных; - не делай предположений.  Пример:  Вопрос: \"Какое значение в Нарынской области за 2022 год?\"  Ответ: \"Тактап коюңузчу, сизди кайсы статистикалык көрсөткүч кызыктырат?\" (если вопрос был на кыргызском)  или  \"Уточните, пожалуйста, какой статистический показатель вас интересует.\" (если вопрос был на русском)   3. Если пользователь указал статистический показатель:  - найди соответствующую информацию в переданных данных; - используй дополнительные фильтры только если пользователь их указал; - если пользователь НЕ указал фильтр (год, регион, область, категорию, объект и т.д.), покажи все доступные данные по этому показателю.  Не задавай уточняющие вопросы только потому, что отсутствуют: - год; - регион; - период; - категория; - другие параметры фильтрации.  В таком случае предоставь всю доступную информацию.   Примеры:  Вопрос: \"Количество врачей\"  Ответ: Покажи количество врачей по всем доступным территориям и периодам.   Вопрос: \"Количество врачей за все годы\"  Ответ: Покажи количество врачей за все доступные годы.   Вопрос: \"Количество врачей в Нарынской области\"  Ответ: Покажи количество врачей в Нарынской области за все доступные периоды.   Вопрос: \"Валовой региональный продукт\"  Ответ: Покажи доступные данные по всем регионам, годам и другим доступным параметрам.   4. Если пользователь указал конкретные параметры:  - используй только эти параметры; - не добавляй другие значения.   Пример:  Вопрос: \"Количество врачей в Нарынской области в 2022 году\"  Ответ: Покажи только значение для Нарынской области за 2022 год.   5. Если в данных есть несколько вариантов одного показателя:  - выбирай тот вариант, который максимально соответствует формулировке пользователя; - если показатель действительно невозможно определить — попроси уточнить.   6. Если нужной информации нет:  Ответь:  На русском: \"Информация отсутствует в предоставленных статистических данных.\"  На кыргызском: \"Маалымат берилген статистикалык маалыматтарда жок.\"   7. Запрещено:  - использовать внешние знания; - придумывать значения; - добавлять информацию, которой нет в переданных данных; - объяснять процесс поиска; - упоминать JSON, API, базы данных, внутренние системы или алгоритмы.   8. Формат ответа:  - отвечай на языке вопроса пользователя; - ответ должен быть кратким и понятным; - используй только естественный язык.   9. Источник:  Если передано поле \"Страница источника\":  Добавь в конце ответа:  Русский: Источник: <Страница источника>  Кыргызча: Булак: <Страница источника>  Используй только переданную ссылку. Не показывай ссылки на JSON. Не создавай новые ссылки.   Перед каждым ответом проверь:  Шаг 1: Определи язык вопроса пользователя. Отвечай только на этом языке.  Шаг 2: Есть ли в вопросе статистический показатель?  Если НЕТ → попроси уточнить показатель.  Если ДА → найди и предоставь информацию.  Шаг 3: Есть ли дополнительные параметры (год, регион, категория и т.д.)?  Если ДА → используй только указанные параметры.  Если НЕТ → покажи все доступные данные по этому показателю."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2128,
+        128
+      ],
+      "id": "0d883fb3-1bb0-4eca-a79e-ffe094fc6bae",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: JSON.parse($json.data)\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        240
+      ],
+      "id": "3b0c6ad4-9307-4f77-9f1c-2b9d45d52f45",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1824,
+        -144
+      ],
+      "id": "c5b4449a-294b-43ad-b68e-421193914b57",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 200,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        272
+      ],
+      "id": "21ec7e53-7f2a-4b2e-881d-566735b9833e",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "4s4bToi6IyaO6C6N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ...$json,\n      sourcePage: \"https://stat.gov.kg\" + $json.selectedUrl\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        112
+      ],
+      "id": "a0b23fc7-e0e6-429d-a3fc-75c3101e917b",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1936,
+        128
+      ],
+      "id": "1b496cf0-f7d7-44e9-9ad7-31c3b8605aec",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        16
+      ],
+      "id": "0de7292a-ee61-497e-b4eb-15effd00cc19",
+      "name": "Webhook",
+      "webhookId": "d1684ad0-54ef-4035-9cd7-df2714fe4ca0"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ...$json,\n      chatInput: $json.body.message,\n      sessionId: \"web\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -176
+      ],
+      "id": "27773ab2-d3e3-4670-89aa-4098ecf8f5bb",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      jsonLink: $json.jsonLink || null,\n      selectedUrl: $node[\"Code in JavaScript1\"].json.selectedUrl\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        240
+      ],
+      "id": "d6b06677-6345-406c-98a4-e349bba088a6",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "edccb655-b628-41ab-a9a6-f4b8e7745e2b",
+              "leftValue": "={{ $json.jsonLink }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        256
+      ],
+      "id": "e50d0a3d-8ae5-4528-aa95-a663ab2d4b52",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "pageHtml",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "linkText",
+              "cssSelector": "a[href*=\"/ru/opendata/category/\"]",
+              "returnArray": true
+            },
+            {
+              "key": "linkUrl",
+              "cssSelector": "a[href*=\"/ru/opendata/category/\"]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        416
+      ],
+      "id": "a9767b3d-618e-4529-9905-33d6d5b1e849",
+      "name": "HTML3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mainCategories = [\n  \"/ru/opendata/category/1/\",\n  \"/ru/opendata/category/2/\",\n  \"/ru/opendata/category/3/\",\n  \"/ru/opendata/category/48/\",\n  \"/ru/opendata/category/5/\",\n  \"/ru/opendata/category/6/\",\n  \"/ru/opendata/category/60/\",\n  \"/ru/opendata/category/7/\",\n  \"/ru/opendata/category/5310/\",\n  \"/ru/opendata/category/8/\",\n  \"/ru/opendata/category/4/\",\n  \"/ru/opendata/category/9/\",\n  \"/ru/opendata/category/10/\",\n  \"/ru/opendata/category/13/\",\n  \"/ru/opendata/category/14/\",\n  \"/ru/opendata/category/15/\",\n  \"/ru/opendata/category/5955/\",\n  \"/ru/opendata/category/16/\",\n  \"/ru/opendata/category/12/\",\n  \"/ru/opendata/category/17/\",\n  \"/ru/opendata/category/18/\",\n  \"/ru/opendata/category/19/\",\n  \"/ru/opendata/category/20/\",\n  \"/ru/opendata/category/21/\"\n];\n\nconst texts = $json.linkText;\nconst urls = $json.linkUrl;\n\nconst categories = [];\n\nfor (let i = 0; i < urls.length; i++) {\n\n  if (!mainCategories.includes(urls[i])) {\n    categories.push({\n      linkText: texts[i],\n      linkUrl: urls[i]\n    });\n  }\n\n}\n\nreturn [\n  {\n    json: {\n      chatInput: $json.chatInput,\n      categories: categories\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        480
+      ],
+      "id": "1b425586-546e-4243-aa5e-ba8c909dfd30",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Вопрос пользователя:\n{{$json.chatInput}}\n\nСписок категорий:\n{{ JSON.stringify($json.categories) }}\n\nВыбери одну наиболее подходящую категорию.\nВопрос пользователя может быть на русском или кыргызском языке.\n\nПонимай оба языка одинаково.\n\nПравила:\n- Используй только категории из списка.\n- Не придумывай новые URL.\n- Не изменяй linkUrl.\n- selectedUrl должен быть в точности равен linkUrl выбранной категории.\n\nВерни только JSON:\n\n{\n  \"selectedCategory\": \"<linkText>\",\n  \"selectedUrl\": \"<linkUrl>\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2016,
+        480
+      ],
+      "id": "ceb65546-574a-4167-a04b-fd05d3480560",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 50,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        704
+      ],
+      "id": "2dea63ff-6b52-4f69-88d1-e8fcd9f15a25",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "4s4bToi6IyaO6C6N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let txt = $json.text;\n\ntxt = txt.replace(/```json/g,\"\");\ntxt = txt.replace(/```/g,\"\");\n\nconst obj = JSON.parse(txt);\n\nreturn [\n{\njson:{\nselectedUrl:obj.selectedUrl,\nselectedCategory:obj.selectedCategory\n}\n}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        512
+      ],
+      "id": "bff85301-c928-40ce-8e1c-6fb5a5d7d293",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "url": "=https://stat.gov.kg{{$json.selectedUrl}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "pageHtml"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1456,
+        416
+      ],
+      "id": "173ea175-0b92-42c3-8c40-2165b073a867",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1712,
+        704
+      ],
+      "id": "59ba3db7-fc13-47c7-9a05-2cd82141a9b4",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"answer\": $json.text } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3040,
+        272
+      ],
+      "id": "30be40f8-eeeb-4555-b52d-59bd8e5d4f12",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTML2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML3": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "HTML3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "937bf2c4-4050-4d0e-8b6c-828f793a4113",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43e3eb66c5deff4809685165c6eee6e4bbb4297501bd4c5ee5cf4b3679864140"
+  },
+  "nodeGroups": [],
+  "id": "ZOcVN8TIiJLpFnva",
+  "tags": []
+}
