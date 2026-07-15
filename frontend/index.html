@@ -1,0 +1,112 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+
+<!--    <title>Статистический чат-бот</title>-->
+
+<!--    <link rel="stylesheet" href="style.css">-->
+<!--</head>-->
+
+
+<!--<body>-->
+
+<!--<div class="container">-->
+
+<!--    <div class="header">-->
+<!--        📊 Статистический чат-бот-->
+<!--    </div>-->
+
+
+<!--    <div id="chat" class="chat">-->
+
+<!--        <div class="bot message">-->
+<!--            <div class="avatar">🤖</div>-->
+
+<!--            <div class="bubble">-->
+<!--                Здравствуйте! Задайте вопрос по статистике Кыргызстана.-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+
+<!--    <div class="input-area">-->
+
+<!--        <input-->
+<!--            id="msg"-->
+<!--            type="text"-->
+<!--            placeholder="Введите вопрос..."-->
+<!--            onkeydown="if(event.key==='Enter') send()"-->
+<!--        >-->
+
+<!--        <button onclick="send()">-->
+<!--            ➤-->
+<!--        </button>-->
+
+<!--    </div>-->
+
+
+<!--</div>-->
+
+
+<!--<script src="script.js"></script>-->
+
+
+<!--</body>-->
+<!--</html>-->
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистический чат-бот</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="chat-card">
+      <div class="chat-header">
+        <div class="brand">
+          <div class="brand-icon">📊</div>
+          <h1>Статистический чат-бот</h1>
+        </div>
+        <div class="status">
+          <span class="status-dot"></span>
+          Онлайн
+        </div>
+        <button id="clearChatButton" class="icon-button" title="Очистить чат">🗑</button>
+      </div>
+
+      <div id="chat" class="chat">
+        <div class="bot-message message">
+          <div class="avatar">AI</div>
+          <div class="message-content">
+            <div class="bubble">Здравствуйте! Задайте вопрос по статистике Кыргызстана.</div>
+            <time class="message-time">--:--</time>
+          </div>
+        </div>
+      </div>
+
+      <form id="chatForm" class="input-area">
+        <textarea id="msg" placeholder="Введите вопрос..."></textarea>
+        <button id="sendButton" type="submit" class="send-button">➤</button>
+      </form>
+
+      <div id="suggestions" class="suggestions">
+        <div class="suggestion-chip">Население</div>
+        <div class="suggestion-chip">ВВП</div>
+        <div class="suggestion-chip">Цены</div>
+      </div>
+
+      <div class="footer-note">Данные предоставлены stat.gov.kg</div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

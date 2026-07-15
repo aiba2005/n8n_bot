@@ -1,0 +1,2 @@
+{"__type":"$$EventMessageAudit","id":"cfaa5cdc-2361-4292-83d2-1d7c46dc7a30","ts":"2026-07-10T00:56:13.784-04:00","eventName":"n8n.audit.workflow.activated","message":"n8n.audit.workflow.activated","payload":{"workflowId":"ZOcVN8TIiJLpFnva","workflowName":"Chat_Bot","activeVersionId":"5375d005-25b2-4094-ace6-4f9931a05419","activationMode":"init"}}
+{"__type":"$$EventMessageConfirm","confirm":"cfaa5cdc-2361-4292-83d2-1d7c46dc7a30","ts":"2026-07-10T00:56:13.785-04:00","source":{"id":"0","name":"eventBus"}}
